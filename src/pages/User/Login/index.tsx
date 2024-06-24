@@ -1,6 +1,5 @@
 import { Footer } from '@/components';
 import { login } from '@/services/ant-design-pro/api';
-import { getFakeCaptcha } from '@/services/ant-design-pro/login';
 import {
   LockOutlined,
   UserOutlined,
@@ -186,6 +185,8 @@ const Login: React.FC = () => {
             onFinish={async (values) => {
               await handleSubmit(values as API.LoginParams);
             }}
+            
+            
           >
             <Tabs
               activeKey={type}
