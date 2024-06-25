@@ -17,19 +17,19 @@ export default [
   },
   {
     path: '/welcome',
-    name: 'welcome',
+    name: 'Welcome',
     icon: 'smile',
     component: './Welcome',
   },
   {
     path: '/hotdeskbooking',
-    name: 'Hotdesk Booking',
+    name: 'Hot Desk Booking',
     icon: 'DesktopOutlined',
     component: './Hotdeskbooking/Hotdeskbooking',
   },
   {
     path: '/meetingroom',
-    name: 'Meeting Room',
+    name: 'Meeting Room Booking',
     icon: 'UsergroupAddOutlined',
     component: './Meetingroombooking/MeetingRoom',
   },
@@ -38,7 +38,7 @@ export default [
 
   {
     path: '/admin',
-    name: 'admin',
+    name: 'Admin',
     icon: 'crown',
     access: 'canAdmin',
     routes: [
