@@ -1,124 +1,116 @@
 import { AvatarDropdown, AvatarName, Footer, Question } from '@/components';
-import { currentUser as queryCurrentUser } from '@/services/ant-design-pro/api';
-import type { Settings as LayoutSettings } from '@ant-design/pro-components';
+import { login2 } from '@/services/ant-design-pro/api'; 
+import { useFetchData, type Settings as LayoutSettings } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import { history } from '@umijs/max';
 import defaultSettings from '../config/defaultSettings';
 import { errorConfig } from './requestErrorConfig';
+
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
 
-/**
- * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
- * */
 export async function getInitialState(): Promise<{
   settings?: Partial<LayoutSettings>;
-  currentUser?: API.CurrentUser;
+  user_status?: API.Login;
   loading?: boolean;
-  fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
+  fetchUserInfo?: () => Promise<API.Login | undefined>;
 }> {
-  const fetchUserInfo = async () => {
+  const fetchUserInfo = async (): Promise<API.Login | undefined> => {
     try {
-      const msg = await queryCurrentUser({
-        skipErrorHandler: true,
-      });
-      return msg.data;
+      const response = await login2({ username: 'yourUsername', password: 'yourPassword' });
+      return response;
     } catch (error) {
-      history.push(loginPath);
+      console.error('Failed to fetch user info:', error);
+      return undefined;
     }
-    return undefined;
   };
-  // 如果不是登录页面，执行
+  
   const { location } = history;
+  let user_status;
+
   if (location.pathname !== loginPath) {
-    const currentUser = await fetchUserInfo();
-    return {
-      fetchUserInfo,
-      currentUser,
-      settings: defaultSettings as Partial<LayoutSettings>,
-    };
+    user_status = await fetchUserInfo();
   }
+
   return {
     fetchUserInfo,
+    user_status,
     settings: defaultSettings as Partial<LayoutSettings>,
   };
 }
 
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
 export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
+  const fetchUserInfoAndUpdateState = async () => {
+    if (initialState?.fetchUserInfo) {
+      const newUserStatus = await initialState.fetchUserInfo();
+      if (newUserStatus) {
+        setInitialState((s) => ({
+          ...s,
+          user_status: newUserStatus,
+        }));
+      }
+    }
+  };
+  
   return {
     actionsRender: () => [<Question key="doc" />],
     avatarProps: {
-      src: initialState?.currentUser?.avatar,
-      title: <AvatarName />,
+      title: initialState?.user_status?.map?.user?.username, 
       render: (_, avatarChildren) => {
         return <AvatarDropdown>{avatarChildren}</AvatarDropdown>;
       },
     },
-    // waterMarkProps: {
-    //   content: initialState?.currentUser?.name,
-    // },
     footerRender: () => <Footer />,
     onPageChange: () => {
       const { location } = history;
-      // 如果没有登录，重定向到 login
-      if (!initialState?.currentUser && location.pathname !== loginPath) {
+      // Check if user is not logged in and trying to access a protected route
+      if (!initialState?.user_status?.map?.user && location.pathname !== loginPath) {
+        console.log('Not logged in, redirecting to login page');
         history.push(loginPath);
       }
     },
     bgLayoutImgList: [
       {
-        src: 'https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/D2LWSqNny4sAAAAAAAAAAAAAFl94AQBr',
+        background: '#FFFFFF',
         left: 85,
         bottom: 100,
         height: '303px',
       },
       {
-        src: 'https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/C2TWRpJpiC0AAAAAAAAAAAAAFl94AQBr',
+        background: '#FFFFFF',
         bottom: -68,
         right: -45,
         height: '303px',
       },
       {
-        src: 'https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/F6vSTbj8KpYAAAAAAAAAAAAAFl94AQBr',
+        background: '#FFFFFF',
         bottom: 0,
         left: 0,
         width: '331px',
       },
     ],
-    // links: isDev
-    //   ? [
-    //       <Link key="openapi" to="/umi/plugin/openapi" target="_blank">
-    //         <LinkOutlined />
-    //         <span>OpenAPI 文档</span>
-    //       </Link>,
-    //     ]
-    //   : [],
     menuHeaderRender: undefined,
-    // 自定义 403 页面
-    // unAccessible: <div>unAccessible</div>,
-    // 增加一个 loading 的状态
     childrenRender: (children) => {
-      // if (initialState?.loading) return <PageLoading />;
       return (
         <>
           {children}
-
-          {}
         </>
       );
     },
+    
     // Adding user details to the sidebar
-    menuExtraRender: () => {
-      const { currentUser } = initialState || {};
-      if (!currentUser) {
+    menuExtraRender: ({ collapsed }) => {
+      const { user_status } = initialState || {};
+      const user = user_status?.map?.user;
+      if (!user|| collapsed) {
         return null;
       }
       return (
         <div style={{ padding: '16px', color: 'rgba(0, 0, 0, 0.65)', background: '#FFDC00' }}>
-          <div style={{ marginBottom: '16px', fontWeight: 'bold' }}>{currentUser.name}</div>
-          <div style={{ marginBottom: '8px' }}>{currentUser.role}</div>
-          <div>{currentUser.email}</div>
+          <div style={{ marginBottom: '16px', fontWeight: 'bold' }}>{user.username}</div>
+          <div style={{ marginBottom: '8px' }}>{user.role}</div>
+          <div>{user.email}</div>
         </div>
       );
     },
@@ -134,3 +126,4 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
 export const request = {
   ...errorConfig,
 };
+

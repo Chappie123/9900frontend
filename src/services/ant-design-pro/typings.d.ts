@@ -2,6 +2,27 @@
 /* eslint-disable */
 
 declare namespace API {
+  type Login = {
+    code?: NonNullable;
+    msg?: NonNullable;
+    data?: NonNullable;
+    map?: {
+      sessionId?: string;
+      user?: {
+        userid?: number;
+        zid?: number;
+        username?: string;
+        test?: string;
+        email?: string;
+        faculty?: string;
+        school?: string;
+        degree?: string;
+        role?: string;//done
+        password?: string;
+      };
+    };
+  };
+
   type CurrentUser = {
     name?: string;
     avatar?: string;
@@ -64,8 +85,7 @@ declare namespace API {
   type LoginParams = {
     username?: string;
     password?: string;
-    autoLogin?: boolean;
-    type?: string;
+    rememberMe?: boolean;
   };
 
   type ErrorResponse = {

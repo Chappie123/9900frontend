@@ -1,6 +1,5 @@
-# Ant Design Pro
+#CSE space management
 
-This project is initialized with [Ant Design Pro](https://pro.ant.design). Follow is the quick guide for how to use.
 
 ## Environment Prepare
 
@@ -13,7 +12,7 @@ npm install
 or
 
 ```bash
-yarn
+yarn(recommended)
 ```
 
 ## Provided Scripts
@@ -27,7 +26,12 @@ Scripts provided in `package.json`. It's safe to modify or add additional script
 ```bash
 npm start
 ```
+or
 
+
+```bash
+yarn satrt (recommended)
+```
 ### Build project
 
 ```bash

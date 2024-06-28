@@ -1,45 +1,11 @@
-import { Footer } from '@/components';
-import { login } from '@/services/ant-design-pro/api';
-import {
-  LockOutlined,
-  UserOutlined,
-} from '@ant-design/icons';
-import {
-  LoginForm,
-  ProFormCheckbox,
-  ProFormText,
-} from '@ant-design/pro-components';
-import { FormattedMessage, history, SelectLang, useIntl, useModel, Helmet } from '@umijs/max';
-import { Alert, message, Tabs } from 'antd';
-import Settings from '../../../../config/defaultSettings';
 import React, { useState } from 'react';
-import { flushSync } from 'react-dom';
+import { Form, Input, Button, message, Checkbox } from 'antd';
+import { login2 } from '@/services/ant-design-pro/api'; 
+import { history, useModel } from '@umijs/max';
 import { createStyles } from 'antd-style';
 
 const useStyles = createStyles(({ token }) => {
   return {
-    action: {
-      marginLeft: '8px',
-      color: 'rgba(0, 0, 0, 0.2)',
-      fontSize: '24px',
-      verticalAlign: 'middle',
-      cursor: 'pointer',
-      transition: 'color 0.3s',
-      '&:hover': {
-        color: token.colorPrimaryActive,
-      },
-    },
-    lang: {
-      width: 42,
-      height: 42,
-      lineHeight: '42px',
-      position: 'fixed',
-      right: 16,
-      borderRadius: token.borderRadius,
-      ':hover': {
-        backgroundColor: token.colorBgTextHover,
-      },
-    },
     container: {
       display: 'flex',
       height: '100vh',
@@ -56,7 +22,6 @@ const useStyles = createStyles(({ token }) => {
     rightSide: {
       flex: 1,
       display: 'flex',
-      flexDirection: 'column',
       justifyContent: 'center',
       alignItems: 'center',
     },
@@ -64,6 +29,14 @@ const useStyles = createStyles(({ token }) => {
       width: '200px',
       height: '200px',
       background: 'url(/path/to/your/logo.png) no-repeat center/contain',
+    },
+    formContainer: {
+      width: '100%',
+      maxWidth: '400px', // Adjust the max width as needed
+      padding: '20px',
+      backgroundColor: '#fff',
+      borderRadius: '8px',
+      boxShadow: '0 0 10px rgba(0, 0, 0, 0.1)',
     },
     title: {
       fontSize: '32px',
@@ -77,204 +50,101 @@ const useStyles = createStyles(({ token }) => {
   };
 });
 
-const LoginMessage: React.FC<{
-  content: string;
-}> = ({ content }) => {
-  return (
-    <Alert
-      style={{
-        marginBottom: 24,
-      }}
-      message={content}
-      type="error"
-      showIcon
-    />
-  );
-};
-
 const Login: React.FC = () => {
-  const [userLoginState, setUserLoginState] = useState<API.LoginResult>({});
-  const [type, setType] = useState<string>('account');
-  const { initialState, setInitialState } = useModel('@@initialState');
+  const [loading, setLoading] = useState(false);
+  const { initialState, setInitialState } = useModel('@@initialState');; //useModel to update global state
   const { styles } = useStyles();
-  const intl = useIntl();
-
-  const fetchUserInfo = async () => {
-    const userInfo = await initialState?.fetchUserInfo?.();
-    if (userInfo) {
-      flushSync(() => {
-        setInitialState((s) => ({
-          ...s,
-          currentUser: userInfo,
-        }));
-      });
-    }
-  };
-
-  const handleSubmit = async (values: API.LoginParams) => {
+  const fetchUserInfo1 = async () => {
     try {
-      const msg = await login({ ...values, type });
-      if (msg.status === 'ok') {
-        const defaultLoginSuccessMessage = intl.formatMessage({
-          id: 'pages.login.success',
-          defaultMessage: 'Login successful!',
-        });
-        message.success(defaultLoginSuccessMessage);
-        await fetchUserInfo();
-        const urlParams = new URL(window.location.href).searchParams;
-        history.push(urlParams.get('redirect') || '/');
-        return;
-      }
-      console.log(msg);
-      setUserLoginState(msg);
+      const response = await login2({ username: 'yourUsername', password: 'yourPassword' });
+      return response;
     } catch (error) {
-      const defaultLoginFailureMessage = intl.formatMessage({
-        id: 'pages.login.failure',
-        defaultMessage: 'Login failed, please try again!',
-      });
-      console.log(error);
-      message.error(defaultLoginFailureMessage);
+      console.error('Failed to fetch user info:', error);
+      return undefined;
     }
   };
-  const { status, type: loginType } = userLoginState;
+  const onFinish = async (values: { username: string; password: string}) => {
+    setLoading(true);
+    try {
+      const response = await login2(values);
+      
+      console.log('Login response:', response);
+  
+      if (response.map?.user?.username === values.username && response.map?.user?.password === values.password) {
+        message.success('Login successful!');
+        
+        // Update global state with the login response
+        await setInitialState((s) => ({
+          ...s,
+          user_status: response,
+        }));
+        // Ensure the state is updated before navigation
+        setTimeout(() => {
+        // Navigate to welcome page after state update
+        history.push('/welcome');
+        }, 0);
+        
+        
+      } else {
+        message.error('Incorrect username or password');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      message.error('Login failed, please try again later');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={styles.container}>
-      <Helmet>
-        <title>
-          {intl.formatMessage({
-            id: 'menu.login',
-            defaultMessage: 'Login Page',
-          })}
-          - {Settings.title}
-        </title>
-      </Helmet>
-      
       <div className={styles.leftSide}>
         <div className={styles.logo}>
-
-        <img
-                alt="logo"
-                src="/logo2.png"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                }}
-              />
+          <img
+            alt="logo"
+            src="/logo2.png"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+            }}
+          />
         </div>
       </div>
-  
+
       <div className={styles.rightSide}>
-        <div
-          style={{
-            flex: '1',
-            padding: '32px 0',
-          }}
-        >
+        <div className={styles.formContainer}>
           <div className={styles.title}>CSE Space Management System</div> {/* Main title */}
           <div className={styles.spacer}></div> {/* Added spacing */}
-          <LoginForm
-            contentStyle={{
-              minWidth: 280,
-              maxWidth: '75vw',
-            }}
-            initialValues={{
-              autoLogin: true,
-            }}
-            onFinish={async (values) => {
-              await handleSubmit(values as API.LoginParams);
-            }}
-            
-            
+          <Form
+            name="login"
+            onFinish={onFinish}
           >
-            <Tabs
-              activeKey={type}
-              onChange={setType}
-              centered
-              items={[
-                {
-                  key: 'account',
-                  label: intl.formatMessage({
-                    id: 'pages.login.accountLogin.tab',
-                    defaultMessage: 'Account Login',
-                  }),
-                },
-              ]}
-            />
-
-            {status === 'error' && loginType === 'account' && (
-              <LoginMessage
-                content={intl.formatMessage({
-                  id: 'pages.login.accountLogin.errorMessage',
-                  defaultMessage: 'Incorrect username or password (admin/ant.design)',
-                })}
-              />
-            )}
-            {type === 'account' && (
-              <>
-                <ProFormText
-                  name="username"
-                  fieldProps={{
-                    size: 'large',
-                    prefix: <UserOutlined />,
-                  }}
-                  placeholder={intl.formatMessage({
-                    id: 'pages.login.username.placeholder',
-                    defaultMessage: 'Username: admin or user',
-                  })}
-                  rules={[
-                    {
-                      required: true,
-                      message: (
-                        <FormattedMessage
-                          id="pages.login.username.required"
-                          defaultMessage="Please enter your username!"
-                        />
-                      ),
-                    },
-                  ]}
-                />
-                <ProFormText.Password
-                  name="password"
-                  fieldProps={{
-                    size: 'large',
-                    prefix: <LockOutlined />,
-                  }}
-                  placeholder={intl.formatMessage({
-                    id: 'pages.login.password.placeholder',
-                    defaultMessage: 'Password: ant.design',
-                  })}
-                  rules={[
-                    {
-                      required: true,
-                      message: (
-                        <FormattedMessage
-                          id="pages.login.password.required"
-                          defaultMessage="Please enter your password!"
-                        />
-                      ),
-                    },
-                  ]}
-                />
-              </>
-            )}
-            <div
-              style={{
-                marginBottom: 24,
-              }}
+            <Form.Item
+              name="username"
+              rules={[{ required: true, message: 'username' }]}
             >
-              <ProFormCheckbox noStyle name="autoLogin">
-                <FormattedMessage id="pages.login.rememberMe" defaultMessage="Remember me" />
-              </ProFormCheckbox>
-            </div>
-          </LoginForm>
+              <Input placeholder="username" size="large" />
+            </Form.Item>
+            <Form.Item
+              name="password"
+              rules={[{ required: true, message: 'password' }]}
+            >
+              <Input.Password placeholder="password" size="large" />
+            </Form.Item>
+            <Form.Item name="rememberMe" valuePropName="checked">
+              <Checkbox>Remember me</Checkbox>
+            </Form.Item>
+            <Form.Item>
+              <Button type="primary" htmlType="submit" loading={loading} block size="large">
+                Login
+              </Button>
+            </Form.Item>
+          </Form>
         </div>
-        <Footer />
       </div>
     </div>
   );
 };
 
 export default Login;
-

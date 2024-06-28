@@ -31,6 +31,25 @@ export async function login(body: API.LoginParams, options?: { [key: string]: an
     ...(options || {}),
   });
 }
+//#############################################################################
+/** 登录接口 GET /api/login/account */
+
+export async function login2(params: { username: string; password: string }, options?: { [key: string]: any }) {
+  return request<API.Login>(`http://170.64.210.109:8082/login`, {
+    // /api/mock
+    //http://170.64.210.109:8082/login?${queryParams}
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    params:{
+      ...params
+    },
+    ...(options || {}),
+  });
+}
+
+//#############################################################################
 
 /** 此处后端没有提供注释 GET /api/notices */
 export async function getNotices(options?: { [key: string]: any }) {

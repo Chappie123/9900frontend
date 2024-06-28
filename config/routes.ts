@@ -40,7 +40,7 @@ export default [
     path: '/admin',
     name: 'Admin',
     icon: 'crown',
-    access: 'canAdmin',
+    isAdmin: true,
     routes: [
       {
         path: '/admin',

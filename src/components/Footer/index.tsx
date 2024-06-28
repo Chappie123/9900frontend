@@ -12,19 +12,19 @@ const Footer: React.FC = () => {
         {
           key: 'project',
           title: 'CSE Space',
-          href: 'https://pro.ant.design',
+          href: 'https://www.unsw.edu.au/engineering/our-schools/computer-science-and-engineering',
           blankTarget: true,
         },
         {
           key: 'github',
           title: <GithubOutlined />,
-          href: 'https://github.com/ant-design/ant-design-pro',
+          href: 'https://github.com/unsw-cse-comp99-3900-24t1/capstone-project-9900f09afinalupupup',
           blankTarget: true,
         },
         {
           key: 'Team',
           title: 'FinalUPUPUP',
-          href: 'https://ant.design',
+          href: 'https://github.com/unsw-cse-comp99-3900-24t1/capstone-project-9900f09afinalupupup',
           blankTarget: true,
         },
       ]}
